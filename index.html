@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clasificador MNIST - Dibujar</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        canvas {
+            border: 1px solid black;
+            cursor: crosshair;
+        }
+        #resultado {
+            font-size: 1.5rem;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Clasificador de Dígitos - Dibuja un número</h1>
+    <p>Dibuja un número del 0 al 9 en el lienzo y presiona "Predecir".</p>
+    <canvas id="lienzo" width="280" height="280"></canvas>
+    <br>
+    <button id="limpiar">Limpiar</button>
+    <button id="predecir">Predecir</button>
+    <p id="resultado"></p>
+
+    <script>
+        const canvas = document.getElementById("lienzo");
+        const ctx = canvas.getContext("2d");
+        const limpiarBtn = document.getElementById("limpiar");
+        const predecirBtn = document.getElementById("predecir");
+        const resultado = document.getElementById("resultado");
+
+        let dibujando = false;
+
+        // Configuración inicial del lienzo
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 10;
+        ctx.lineCap = "round";
+
+        // Eventos para dibujar
+        canvas.addEventListener("mousedown", () => (dibujando = true));
+        canvas.addEventListener("mouseup", () => (dibujando = false));
+        canvas.addEventListener("mousemove", dibujar);
+
+        function dibujar(event) {
+            if (!dibujando) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        // Limpiar el lienzo
+        limpiarBtn.addEventListener("click", () => {
+            ctx.fillStyle = "white";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            resultado.textContent = "";
+        });
+
+        // Enviar el dibujo al backend para predecir
+        predecirBtn.addEventListener("click", async () => {
+            const imgData = canvas.toDataURL("image/png");
+            const response = await fetch("http://localhost:8000/predecir/", {
+                method: "POST",
+                body: JSON.stringify({ image: imgData }),
+                headers: { "Content-Type": "application/json" },
+            });
+
+            const result = await response.json();
+            resultado.textContent = result.prediccion ? `Predicción: ${result.prediccion}` : `Predicción: ${"0"}`;
+        });
+    </script>
+</body>
+</html>
