@@ -1,5 +1,4 @@
-# Este colab forma parte del video de Redes Neuronales Convolucionales del canal de Youtube "Ringa Tech"
-# https://youtu.be/eGDSlW93Bng
+
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
